@@ -1,17 +1,17 @@
-import sqlite3
+from mysql.connector import connect
 import csv
 import datetime
 import pandas
 
 
 def insert_from_csv(csv_path):
-    conn = sqlite3.connect("data.db")
+    conn = connect(host="localhost",user="zayerwali",password="Z@zayer7006",db="studentdb")
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS stu(roll INTEGER,name TEXT, dob DATE, gender TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS stud(roll INTEGER ,name TEXT, dob DATE, gender TEXT)")
     with open(csv_path, 'r') as files:
         contents = csv.DictReader(files)
         details = [(i['roll'], i['name'], i['dob'], i['gender']) for i in contents]
-    cur.executemany("INSERT INTO stu VALUES(?,?,?,?) ", details)
+    cur.executemany("INSERT INTO stud VALUES(%s,%s,%s,%s) ", details)
     conn.commit()
     conn.close()
     print("database Updated")
@@ -29,10 +29,12 @@ def show_from_csv2(csv_path):
 def csv_to_sql2(csv_path):
     file = pandas.read_csv(csv_path)
     data = pandas.DataFrame(file)
-    conn = sqlite3.connect("data.db")
+    conn = connect(host="localhost",user="zayerwali",password="Z@zayer7006",db="studentdb")
     cur = conn.cursor()
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS stud(roll INTEGER ,name TEXT, dob DATE, gender TEXT)")
     for row in data.itertuples():
-        cur.execute("INSERT INTO stu VALUES(?,?,?,?)", (row.roll, row.name, row.dob, row.gender))
+        cur.execute("INSERT INTO stud VALUES(%s,%s,%s,%s)", (row.roll, row.name, row.dob, row.gender))
     conn.commit()
     conn.close()
 
@@ -56,7 +58,7 @@ if io == "csv":
     insert_from_csv(file)
     print(show_from_csv2(file))
 elif io == "panda":
-    file = input("csv file: ")
+    file = input("panda file: ")
     csv_to_sql2(file)
     fetch_from_csv(file)
 else:
